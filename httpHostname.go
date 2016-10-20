@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func root(w http.ResponseWriter, r *http.Request) {
@@ -14,10 +15,23 @@ func root(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("%v", r)
 	fmt.Fprintf(w, "%s\n", hostname)
 }
 
+func ping() {
+	for {
+		log.Print(".")
+		time.Sleep(time.Second * 3)
+	}
+}
+
 func main() {
+
+	log.SetFlags(log.LstdFlags | log.Lshortfile | log.Lmicroseconds)
+
+	go ping()
+
 	log.Print("Starting")
 	listenPort := os.Getenv("LISTEN_PORT")
 	if listenPort == "" {
