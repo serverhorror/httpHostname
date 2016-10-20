@@ -1,0 +1,40 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: serverhorror.httphostname
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: serverhorror-httpHostname
+    spec:
+      containers:
+        - name: serverhorror-httphostname
+          image: serverhorror/httphostname:latest
+          ports:
+          - containerPort: 8080
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: serverhorror-httphostname
+spec:
+  type: NodePort
+  ports:
+  - port: 8081 # this is the port we will access from the outside
+    targetPort: 8080 # this is the port the pod actually exposes
+    protocol: TCP
+  selector:
+    run: serverhorror-httpHostname
+# ---
+# apiVersion: extensions/v1beta1
+# kind: Ingress
+# metadata:
+#     name: serverhorror-httphostname-ingress
+# spec:
+#     backend:
+#         serviceName: serverhorror-httphostname
+#         servicePort: 8081
