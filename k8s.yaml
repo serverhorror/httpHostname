@@ -13,8 +13,18 @@ spec:
       containers:
         - name: serverhorror-httphostname
           image: serverhorror/httphostname:latest
+          env:
+            - name: LISTEN_PORT
+              value: "8080"
           ports:
           - containerPort: 8080
+          imagePullPolicy: Always
+        - name: serverhorror-memcache
+          image: memcached:latest
+          command:
+            - memcached
+          args:
+            - "-m 64"
           imagePullPolicy: Always
 ---
 apiVersion: v1
@@ -24,8 +34,13 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 8081 # this is the port we will access from the outside
+  - name: httphostname
+    port: 8081 # this is the port we will access from the outside
     targetPort: 8080 # this is the port the pod actually exposes
+    protocol: TCP
+  - name: memcached
+    port: 11211
+    targetPort: 11211
     protocol: TCP
   selector:
     run: serverhorror-httpHostname

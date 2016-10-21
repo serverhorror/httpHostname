@@ -1,36 +1,47 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
-	"time"
 )
 
-func root(w http.ResponseWriter, r *http.Request) {
-	hostname, err := os.Hostname()
+type hostName struct {
+	Hostname string `json:"hostname"`
+}
+
+func (h *hostName) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	dump, err := httputil.DumpRequest(r, true)
 	if err != nil {
+		log.Print(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	log.Printf("\n%s\n", dump)
 
-	log.Printf("%v", r)
-	fmt.Fprintf(w, "%s\n", hostname)
-}
+	n, err := os.Hostname()
+	if err != nil {
+		log.Print(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	h.Hostname = n
 
-func ping() {
-	for {
-		log.Print(".")
-		time.Sleep(time.Second * 3)
+	b, err := json.Marshal(h)
+
+	_, err = w.Write(b)
+	if err != nil {
+		log.Print(err)
+		return
 	}
 }
 
 func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile | log.Lmicroseconds)
-
-	go ping()
 
 	log.Print("Starting")
 	listenPort := os.Getenv("LISTEN_PORT")
@@ -40,6 +51,6 @@ func main() {
 	}
 	log.Printf("listenPort: %v", listenPort)
 
-	http.HandleFunc("/", root)
+	http.Handle("/", &hostName{})
 	http.ListenAndServe(":"+listenPort, nil)
 }
