@@ -43,7 +43,7 @@ func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile | log.Lmicroseconds)
 
-	log.Print("Starting v0.1.2")
+	log.Print("Starting v0.1.3")
 	listenPort := os.Getenv("LISTEN_PORT")
 	if listenPort == "" {
 		fmt.Println("`LISTEN_PORT' must be set")
